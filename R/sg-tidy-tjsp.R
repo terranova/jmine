@@ -152,7 +152,11 @@ tidy_tjsp_cposg_dec <- function(cposg) {
 }
 
 
-
+#' Tidy TJSP
+#'
+#' @param path folder that contains cpopg.rds file
+#'
+#' @export
 tidy_tjsp_cposg <- function(path) {
 
   cposg <- readr::read_rds(paste0(path, "/cposg.rds"))
