@@ -152,13 +152,18 @@ tidy_tjsp_cposg_movs <- function(cposg, cut_time = 3) {
 
 tidy_tjsp_cposg_dec <- function(cposg) {
   re_adeq <- stringr::regex("ADEQUA", ignore_case = TRUE)
+  re_retir <- stringr::regex("RETIRADO DE PAUTA", ignore_case = TRUE)
+  re_embargo <- stringr::regex("EMBARGO", ignore_case = TRUE)
 
   cposg_dec <- cposg %>%
     dplyr::filter(return != "error") %>%
     tidyr::unnest(output) %>%
     dplyr::select(id1, file, decisions) %>%
     tidyr::unnest()  %>%
-    dplyr::filter(!is.na(decision), !stringr::str_detect(decision, re_adeq)) %>%
+    dplyr::filter(!is.na(decision),
+                  !stringr::str_detect(decision, re_adeq),
+                  !stringr::str_detect(decision, re_retir),
+                  !stringr::str_detect(decision, re_embargo)) %>%
     dplyr::mutate(dec = stat_decision(decision),
                   unanime = stat_unanime(decision)) %>%
     dplyr::arrange(dplyr::desc(date)) %>%

@@ -23,18 +23,19 @@ re_pj <- function() {
 # extrai o teor da decisão
 stat_decision <- function(x) {
   dct <- stringr::str_detect
-  re_negaram <- "negaram|desprovido|nego prov|improced|indef[ei]r|deneg" %>%
-    stringr::str_c("nega-se|mantid", sep = "|") %>%
+  re_negaram <- "negaram|neagram|desprovido|nego prov|improced|indef[ei]r|deneg" %>%
+    stringr::str_c("nega-se|mantid|n[aã]o prov|mantiveram|negado prov", sep = "|") %>%
+    stringr::str_c("nega prov", sep = "|") %>%
     stringr::regex(ignore_case = TRUE)
   re_parcial <- stringr::regex("parcial|em parte", ignore_case = TRUE)
-  re_deram <- stringr::regex("deram|proced|reform|acolh|provido", ignore_case = TRUE)
-  re_conhec <- stringr::regex("conhec", ignore_case = TRUE)
+  re_deram <- stringr::regex("der[ea]m|alteraram|retific|proced|reform|acolh|provido|dar prov", ignore_case = TRUE)
+  re_conhec <- stringr::regex("co?nhec", ignore_case = TRUE)
   re_dilig <- stringr::regex("dilig", ignore_case = TRUE)
   re_prejud <- stringr::regex("prejud", ignore_case = TRUE)
-  re_acordo <- stringr::regex("acordo", ignore_case = TRUE)
-  re_desist <- stringr::regex("desist", ignore_case = TRUE)
+  re_acordo <- stringr::regex("acordo|autocom", ignore_case = TRUE)
+  re_desist <- stringr::regex("desist|ren[uú]n", ignore_case = TRUE)
   re_anul <- stringr::regex("anul", ignore_case = TRUE)
-  re_extin <- stringr::regex("extin", ignore_case = TRUE)
+  re_extin <- stringr::regex("extin|prescri", ignore_case = TRUE)
   dplyr::case_when(
     dct(x, re_parcial) ~ "parcial",
     dct(x, re_negaram) & dct(x, re_deram) ~ "parcial",
