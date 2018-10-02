@@ -46,6 +46,7 @@ tidy_tjsp_cposg_data <- function(cposg) {
     tidyr::separate(origem, c("info_comarca", "info_foro", "info_vara"),
                     sep = " / ", extra = "merge", fill = "right") %>%
     dplyr::mutate(
+      info_comarca = stringr::str_extract(info_comarca, re_coma),
       info_comarca = clean_comarca(info_comarca),
       info_comarca = dplyr::case_when(
         info_comarca == "S.JOSE DO RIO PARDO" ~ "SAO JOSE DO RIO PARDO",
@@ -65,8 +66,7 @@ tidy_tjsp_cposg_data <- function(cposg) {
                     sep = " ?- ?", remove = FALSE, extra = "merge",
                     fill = "right") %>%
     dplyr::mutate(info_cruzeiro = stringr::str_detect(valor_da_acao, "[cC]"),
-                  info_valor = parse_real(valor_da_acao),
-                  info_comarca = stringr::str_extract(info_comarca, re_coma))
+                  info_valor = parse_real(valor_da_acao))
 
   cposg_data %>%
     dplyr::select(
