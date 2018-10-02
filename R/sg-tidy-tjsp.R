@@ -14,10 +14,13 @@ tidy_tjsp_cposg_data <- function(cposg) {
     tidyr::spread(data, value) %>%
     janitor::clean_names() %>%
     dplyr::rename(n_processo = id1) %>%
+    # arrumar
     dplyr::mutate(camara = stringr::str_extract(distribuicao, "[0-9]+"),
                   camara = stringr::str_pad(camara, 2, "left", "0")) %>%
-    dplyr::mutate(area = dplyr::if_else(area == "Criminal",
-                                        "Criminal", "Privado"))
+    dplyr::mutate(
+      area = dplyr::if_else(area == "Criminal", "Criminal", "Privado")
+    ) %>%
+    # arrumar
     dplyr::mutate(area = dplyr::case_when(
       area == "Privado" & camara %in% sprintf("%02d", 1:10) ~ "Família",
       area == "Privado" & camara %in% sprintf("%02d", c(11:24, 37:38)) ~ "Contratos",
@@ -26,6 +29,9 @@ tidy_tjsp_cposg_data <- function(cposg) {
     )) %>%
     tidyr::separate(origem, c("info_comarca", "info_foro", "info_vara"),
                     sep = " / ", extra = "merge", fill = "right") %>%
+    tidyr::separate(assunto, c("assunto_pai", "assunto_filho"),
+                    sep = " ?- ?", remove = FALSE, extra = "merge",
+                    fill = "right") %>%
     dplyr::mutate(info_cruzeiro = stringr::str_detect(valor_da_acao, "[cC]"),
                   info_valor = parse_real(valor_da_acao),
                   info_comarca = stringr::str_extract(info_comarca, re_coma))
@@ -36,12 +42,16 @@ tidy_tjsp_cposg_data <- function(cposg) {
       file,
       info_area = area,
       info_classe = classe,
-      info_assunto = assunto,
+      info_assunto_full = assunto,
+      info_assunto_pai = assunto_pai,
+      info_assunto_filho = assunto_filho,
       info_camara = distribuicao,
       info_relator = relator,
-      info_origem = origem,
+      info_comarca,
+      info_foro,
       info_status = situacao,
-      info_valor = valor_da_acao
+      info_cruzeiro,
+      info_valor
     )
 }
 
@@ -57,6 +67,7 @@ tidy_tjsp_cposg_parts <- function(cposg) {
     "suscitante", "requerente", "reclamante"
   )
   adv <- c("advogado", "advogada")
+
   cposg_parts <- cposg %>%
     dplyr::filter(return != "error") %>%
     tidyr::unnest(output) %>%
@@ -77,12 +88,28 @@ tidy_tjsp_cposg_parts <- function(cposg) {
     dplyr::summarise(name = paste(name, collapse = "\n")) %>%
     dplyr::ungroup() %>%
     tidyr::spread(tipo_parte, name) %>%
-    dplyr::select(n_processo = id1, file,
-                  part_ativo = ativo,
-                  part_ativo_adv = ativo_adv,
-                  part_passivo = passivo,
-                  part_passivo_adv = passivo_adv)
-  cposg_parts
+    dplyr::mutate(
+      ativo_pj = is_pj(ativo),
+      passivo_pj = is_pj(passivo),
+      tipo_litigio = dplyr::case_when(
+        ativo_pj & passivo_pj ~ "nPF-nPF",
+        ativo_pj & !passivo_pj ~ "nPF-PF",
+        !ativo_pj & passivo_pj ~ "PF-nPF",
+        !ativo_pj & !passivo_pj ~ "PF-PF"
+      ),
+      ativo = clean_part(ativo),
+      passivo = clean_part(passivo)
+    )
+
+  cposg_parts %>%
+    dplyr::select(
+      n_processo = id1, file,
+      part_ativo = ativo,
+      part_ativo_adv = ativo_adv,
+      part_passivo = passivo,
+      part_passivo_adv = passivo_adv,
+      part_tipo_litigio = tipo_litigio
+    )
 }
 
 tidy_tjsp_cposg_movs <- function(cposg, cut_time = 3) {

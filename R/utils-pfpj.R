@@ -46,7 +46,6 @@ fix_nomes <- function(names_column) {
     arruma_sa() %>%
     arruma_ltda() %>%
     arruma_me() %>%
-    abjutils::rm_accent() %>%
     stringr::str_replace_all("[!#$%&'()*+,-./:;<=>?^_`{|}~.]","")
 }
 
@@ -66,6 +65,11 @@ vec2regex <- function(...){
 aggregate_major_companies <- function(names_column){
 
   lista_de_regex <- list(
+    # setor publico ---
+    regex_fazenda = vec2regex("fazenda do estado", "fazenda publica"),
+    regex_mpublico = vec2regex("ministerio publico"),
+    regex_municipio = vec2regex("municipio", "prefeitura"),
+    # setor privado ---
     regex_claro = vec2regex("claro", "embratel", "bcp"),
     regex_rio_claro = vec2regex("rio claro"),
     regex_nextel = vec2regex("nextel"),
@@ -208,11 +212,13 @@ aggregate_major_companies <- function(names_column){
   #considerando que eu vou fazer um for depois, realmente vale a pena construir esse objeto?
   colunas_bl <- purrr::map(lista_de_regex, stringr::str_detect, string = names_column)
 
+  # a ordem em que as regex foram escritas importa
   for(i in seq_along(colunas_bl)){
     names_column <- ifelse(colunas_bl[[i]], names(colunas_bl)[i], names_column)
   }
   names_column
 }
+
 
 #' Creates column of companies segment
 #'
@@ -225,11 +231,16 @@ aggregate_major_companies <- function(names_column){
 market_segments <- function(names_column){
 
   lista_de_regex <- list(
+    # setor publico
+    ministerio_publico = vec2regex("mpublico"),
+    fazenda = vec2regex("fazenda"),
+    municipio = vec2regex("municipio"),
+    # setor privado
     telecomunicacoes = vec2regex("vivo","oi","claro","tim","sky","net","nextel"),
-    bancos_cartoes_financeiras = vec2regex("losango","american express","amex","credicard","banco","ford","sofisa","schahin","cacique","credifibra","farroupilha","aymore","cifra","banco( |_)mercantil","herval","bonsucesso","bgn","citi","gmac","abn","daycoval","safra","cruzeiro( |_)do( |_)sul","banrisul","volkswage[nm]","renner","finasa","cef","itau","bb","bradesco","santander","bmg","panamericano","bv","ourocard","hsbc"),
+    bancos_cartoes_financeiras = vec2regex("losango","american express","amex","credicard","banco","ford","sofisa","schahin","cacique","credifibra","farroupilha","aymore","cifra","banco( |_)mercantil","herval","bonsucesso","bgn","citi","gmac","abn","daycoval","safra","cruzeiro( |_)do( |_)sul","banrisul","volkswage[nm]","renner","finasa","cef","itau","bb","bradesco","santander","bmg","panamericano","bv","ourocard","hsbc","btg pactual"),
     comercio_eletronico = vec2regex("centaurocombr","peixe urbano","cnova","kabum","nova pontocom","wmb","buscape","submarino","americanascom","casasbahiacom","pontofriocom","magazineluizacom"),
     banco_de_dados = vec2regex("spc","serasa","scpc","boa( |_)vista","cdl"),
-    fabricantes_eletrocnicos = vec2regex("cielo","sony","samsung","lg","positivo","philips","aoc","lenovo","semp toshipa","d-link","cce","lexmark","compaq"),
+    fabricantes_eletrocnicos = vec2regex("cielo","sony","samsung","lg","positivo","phillips","aoc","lenovo","semp toshipa","d-link","cce","lexmark","compaq"),
     varejo = vec2regex("lame","magazine( |_)luiza","vvar","ricardoeletro","pernambucanas","sendas","riachuelo"),
     transporte_aereo = vec2regex("tam","latam","_azul","gol","avianca","lufthansa"),
     seguros = vec2regex("segur","confianca","ace","porto( |_)seguro","lider","mapfre","cardif","caixa segur","bradesco auto","bb seguro auto","garantec","bradesco vida","itau segur","assurant","zurich","luizaseg","sulamerica"),
@@ -246,9 +257,54 @@ market_segments <- function(names_column){
   #considerando que eu vou fazer um for depois, realmente vale a pena construir esse objeto?
   colunas_bl <- purrr::map(lista_de_regex, stringr::str_detect, string = names_column)
 
-  for(i in seq_along(colunas_bl)){
+  for(i in seq_along(colunas_bl)) {
     names_column <- ifelse(colunas_bl[[i]], names(colunas_bl)[i], names_column)
   }
   names_column
 
+}
+
+is_pj <- function(names_column) {
+
+  # regex de empresas
+  re_pj <- stringr::regex(stringr::str_c(
+    "S[/.]A", "LTDA", "EIREL[IE]", " ME$", "ITAU", "FINANCEIR", "EPP$",
+    "FINANCIAM", "SEGUR[AO]", "BANCO", "TELE[CF]O", "CARTAO", "CARTOES",
+    "PETROB", "FUNDACAO", "ASSOCIACAO", "EDUCACION", "UNIMED", "SAUDE",
+    "CREDITO", "LOJAS", "CASAS BAHIA", "SANTANDER", "BRADES",
+    "CONDOMINIO", "COMPANHIA", "HIPOTECA", "ADVOGAD",
+    "INSS", "PREVIDENCIA", "FAZENDA DO ESTADO",
+    "MUNICIPIO", "PREFEITURA", "UNIVERSIDADE", "FACULDADE", "SAO PAULO",
+    "CAIXA", "POLICIA", "MINISTERIO PUBLICO", "LABORATORIO",
+    "DEPARTAMENTO", "HOSPITAL", "SOCIEDADE", "INVESTIM", "CONFEDERACAO",
+    "FAZENDA PUBLICA", "INSTITUTO", "MOVIMENTO", "HABITACIONAL",
+    "RESIDENCIAL", "ESCRITORIO", "EMPREENDIMENTO", "IMOBILIARI",
+    "SUDAMERIKA", "IGREJA", "TRANSPORTE",
+    sep = "|"), ignore_case = TRUE)
+
+  # blacklist
+  re_bl <- stringr::regex(stringr::str_c(
+    "DEFENSORIA", "GIANLUCA",
+    sep = "|"), ignore_case = TRUE)
+
+  # clean names, two types
+  nm <- abjutils::rm_accent(names_column)
+  fixed <- fix_nomes(nm)
+
+  # booleans
+  has_pj_suffix <- stringr::str_detect(fixed, "@")
+  has_pj_name <- stringr::str_detect(nm, re_pj)
+  black_list <- stringr::str_detect(fixed, re_bl)
+
+  # condition
+  (has_pj_name | has_pj_suffix) & !black_list
+}
+
+# serve para mostrar o nome limpo bonitinho
+clean_part <- function(names_column) {
+  names_column %>%
+    abjutils::rm_accent() %>%
+    fix_nomes() %>%
+    stringr::str_remove_all("@") %>%
+    stringi::stri_trans_toupper()
 }
