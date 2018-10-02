@@ -22,7 +22,9 @@ tidy_tjsp_cposg_data <- function(cposg) {
         stringr::str_detect(distribuicao, "Criminal") ~ "Criminal",
         stringr::str_detect(distribuicao, "Privado") ~ "Privado",
         stringr::str_detect(distribuicao, "Empresarial") ~ "Empresarial",
-        stringr::str_detect(distribuicao, "Público") ~ "Público",
+        stringr::str_detect(distribuicao, "P[uú]blico") ~ "Público",
+        stringr::str_detect(distribuicao, "Ambien") ~ "Ambiental",
+        stringr::str_detect(distribuicao, "Recup") ~ "Falência e Recuperação",
         TRUE ~ NA_character_
       ),
       regime = dplyr::case_when(
@@ -164,6 +166,7 @@ tidy_tjsp_cposg_dec <- function(cposg) {
     dplyr::select(n_processo = id1, file,
                   dec_date = date,
                   dec_val = dec,
+                  decision,
                   dec_unanime = unanime)
 
 }

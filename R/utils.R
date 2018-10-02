@@ -27,7 +27,7 @@ stat_decision <- function(x) {
     stringr::str_c("nega-se|mantid", sep = "|") %>%
     stringr::regex(ignore_case = TRUE)
   re_parcial <- stringr::regex("parcial|em parte", ignore_case = TRUE)
-  re_deram <- stringr::regex("deram|proced|reform|acolh", ignore_case = TRUE)
+  re_deram <- stringr::regex("deram|proced|reform|acolh|provido", ignore_case = TRUE)
   re_conhec <- stringr::regex("conhec", ignore_case = TRUE)
   re_dilig <- stringr::regex("dilig", ignore_case = TRUE)
   re_prejud <- stringr::regex("prejud", ignore_case = TRUE)
@@ -54,8 +54,10 @@ stat_decision <- function(x) {
 # verifica se a decisão é unânime
 stat_unanime <- function(x) {
   dct <- stringr::str_detect
-  re_unanime <- stringr::regex("v *\\. *u *\\. *|un[aâ]nim|v\\.? ?u$|^vu[, ]",
-                               ignore_case = TRUE)
+  re_unanime <- stringr::regex(
+    "v *\\. *u *\\. *|un[aâ]nim|v\\.? ?u$|^vu[, ]|VU\\.?$",
+    ignore_case = TRUE
+  )
   re_maioria <- stringr::regex("maioria|vencido", ignore_case = TRUE)
   dplyr::case_when(
     dct(x, re_unanime) ~ "unanime",
