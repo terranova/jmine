@@ -15,8 +15,22 @@ tidy_tjsp_cposg_data <- function(cposg) {
     janitor::clean_names() %>%
     dplyr::rename(n_processo = id1) %>%
     # arrumar
-    dplyr::mutate(camara = stringr::str_extract(distribuicao, "[0-9]+"),
-                  camara = stringr::str_pad(camara, 2, "left", "0")) %>%
+    dplyr::mutate(
+      camara = stringr::str_extract(distribuicao, "[0-9]+"),
+      camara = stringr::str_pad(camara, 2, "left", "0"),
+      tipo_camara = dplyr::case_when(
+        stringr::str_detect(distribuicao, "Criminal") ~ "Criminal",
+        stringr::str_detect(distribuicao, "Privado") ~ "Privado",
+        stringr::str_detect(distribuicao, "Empresarial") ~ "Empresarial",
+        stringr::str_detect(distribuicao, "Público") ~ "Público",
+        TRUE ~ NA_character_
+      ),
+      regime = dplyr::case_when(
+        stringr::str_detect(distribuicao, "Extraordin") ~ "Extraordinária",
+        stringr::str_detect(distribuicao, "ª Câmara (Reservada )?de.*[^A-Z]$") ~ "Ordinária",
+        TRUE ~ "Outro"
+      )
+    ) %>%
     dplyr::mutate(
       area = dplyr::if_else(area == "Criminal", "Criminal", "Privado")
     ) %>%
@@ -45,7 +59,10 @@ tidy_tjsp_cposg_data <- function(cposg) {
       info_assunto_full = assunto,
       info_assunto_pai = assunto_pai,
       info_assunto_filho = assunto_filho,
-      info_camara = distribuicao,
+      info_camara_nm = distribuicao,
+      info_camara_num = camara,
+      info_camara_tipo = tipo_camara,
+      info_camara_regime = regime,
       info_relator = relator,
       info_comarca,
       info_foro,
