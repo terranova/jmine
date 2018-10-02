@@ -75,6 +75,13 @@ clean_key <- function(key) {
     stringr::str_to_lower()
 }
 
+clean_comarca <- function(x) {
+  x %>%
+    stringr::str_squish() %>%
+    abjutils::rm_accent() %>%
+    stringr::str_to_upper()
+}
+
 # arruma info de dinheiro
 parse_real <- function(x) {
   loc <- readr::locale(decimal_mark = ",", grouping_mark = ".")

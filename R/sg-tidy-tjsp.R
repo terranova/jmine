@@ -45,6 +45,22 @@ tidy_tjsp_cposg_data <- function(cposg) {
     )) %>%
     tidyr::separate(origem, c("info_comarca", "info_foro", "info_vara"),
                     sep = " / ", extra = "merge", fill = "right") %>%
+    dplyr::mutate(
+      info_comarca = clean_comarca(info_comarca),
+      info_comarca = dplyr::case_when(
+        info_comarca == "S.JOSE DO RIO PARDO" ~ "SAO JOSE DO RIO PARDO",
+        info_comarca == "S.P./VIC.CARVALHO/GUARUJA" ~ "GUARUJA",
+        info_comarca == 'IPAUCU' ~ 'IPAUSSU',
+        info_comarca == 'MOGI-GUACU' ~ 'MOGI GUACU',
+        info_comarca == 'MOGI-MIRIM' ~ 'MOGI MIRIM',
+        info_comarca == 'SANTA BARBARA D OESTE' ~ "SANTA BARBARA D'OESTE",
+        info_comarca == 'FORO DE OUROESTE' ~ 'OUROESTE',
+        info_comarca == 'ESTRELA D OESTE' ~ 'ESTRELA DOESTE',
+        info_comarca == 'PALMEIRA D OESTE' ~ "PALMEIRA D'OESTE",
+        info_comarca == 'SAO LUIZ DO PARAITINGA' ~ 'SAO LUIS DO PARAITINGA',
+        TRUE ~ info_comarca
+      )
+    ) %>%
     tidyr::separate(assunto, c("assunto_pai", "assunto_filho"),
                     sep = " ?- ?", remove = FALSE, extra = "merge",
                     fill = "right") %>%
