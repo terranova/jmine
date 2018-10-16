@@ -52,6 +52,56 @@ stat_decision <- function(x) {
   )
 }
 
+# extrai o teor da decisão
+stat_decision_criminal_recursos <- function(x) {
+  decisao <- stringi::stri_trans_tolower(x)
+  decisao <- abjutils::rm_accent(decisao)
+  decisao <- case_when(
+    str_detect(decisao,"(prej|extin)") ~ "prejudicado/extinto",
+    str_detect(decisao,"^(desp|impr)") ~ "improvido",
+    str_detect(decisao,"(nao|nega\\w+)\\s+provi.*")~ "improvido",
+    str_detect(decisao,"^prove\\w+") ~ "provido",
+    str_detect(decisao,"^mantiveram") ~ "improvido",
+    str_detect(decisao,"acolh\\w+") ~ "provido",
+    str_detect(decisao,"(deram|da\\-*\\s*se|dando\\-*(se)*|comporta|dou|confere\\-se|se\\s*\\-*da|merece)") ~ "provido",
+    str_detect(decisao,"parcial\\w*\\sprovi\\w+") ~ "provido",
+    str_detect(decisao,"(nao\\sderam|nao\\smerece|se\\snega|nega\\-*\\s*se|negar\\-*\\s*lhe|nao\\scomporta|negram|negararam|nego|negar)") ~ "improvido",
+    str_detect(decisao,"(nao\\sconhec\\w+|nao\\sse\\sconhec\\w+)") ~ "não conhecido",
+    str_detect(decisao,"^desconh\\w+") ~ "desconhecido",
+    str_detect(decisao,"nao\\s+conhec\\w+") ~ "desconhecido",
+    str_detect(decisao,"(homolog|desistencia)") ~ "desistência",
+    str_detect(decisao,"(anular\\w*|nulo|nula|nulidade)") ~ "anulado",
+    str_detect(decisao,"diligencia") ~ "conversão em diligência",
+    TRUE ~ "outro"
+  )
+  decisao
+}
+# extrai o teor da decisão
+stat_decision_criminal_writ <- function(x) {
+  decisao <- stringr::str_to_lower(abjutils::rm_accent(x))
+  decisao <- dplyr::case_when(
+    str_detect(decisao,"(prej|extin)") ~ "prejudicado/extinto",
+    str_detect(decisao,"(indef|inder\\w+)") ~ "denegado",
+    str_detect(decisao,"^defer") ~ "concedido",
+    str_detect(decisao,",\\s+deferi\\w+") ~ "concedido",
+    str_detect(decisao,"(desp|impr)") ~ "denegado",
+    str_detect(decisao,"(nao|nega\\w+)\\s+provi.*")~ "improvido",
+    str_detect(decisao,"^prov") ~ "concedido",
+    str_detect(decisao,"parcial\\sprov\\w+") ~ "concedido",
+    str_detect(decisao,"absolv\\w+") ~ "concedido",
+    str_detect(decisao, "acolher\\w+|\\bprocedente") ~ "concedido",
+    str_detect(decisao,"de*neg") ~ "denegado",
+    str_detect(decisao,"^conce\\w+") ~ "concedido",
+    str_detect(decisao,"^conhe\\w+") ~ "concedido",
+    str_detect(decisao,"nao\\sconhec\\w+") ~ "não conhecido",
+    str_detect(decisao,"^desconh\\w+") ~ "desconhecido",
+    str_detect(decisao,"(homolog|desistencia)") ~ "desistência",
+    str_detect(decisao,"(,|e|votos)\\s+conce\\w+")~ "concedido",
+    TRUE ~ "outros"
+  )
+  decisao
+}
+
 # verifica se a decisão é unânime
 stat_unanime <- function(x) {
   dct <- stringr::str_detect

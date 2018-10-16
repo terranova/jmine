@@ -93,13 +93,13 @@ tidy_tjsp_cposg_data <- function(cposg) {
 tidy_tjsp_cposg_parts <- function(cposg) {
   passivo <- c(
     "apelado", "agravado",
-    "apelada", "apdoapte", "recorrido", "apdaapte",
+    "apelada", "recorrido", #"apdaapte", "apdoapte",
     "ru", "r", "sucitado", "recorrida", "reclamado", "requerido"
   )
   ativo <- c(
-    "apelante", "agravante", "apteapdo", "apteapda",
+    "apelante", "agravante", #"apteapdo", "apteapda",
     "recorrente", "impetrante", "autor", "autora",
-    "suscitante", "requerente", "reclamante"
+    "suscitante", "requerente", "reclamante", "impette/pacient"
   )
   adv <- c("advogado", "advogada")
 
@@ -175,7 +175,7 @@ tidy_tjsp_cposg_dec <- function(cposg) {
     dplyr::filter(return != "error") %>%
     tidyr::unnest(output) %>%
     dplyr::select(id1, file, decisions) %>%
-    tidyr::unnest()  %>%
+    tidyr::unnest() %>%
     dplyr::filter(!is.na(decision),
                   !stringr::str_detect(decision, re_adeq),
                   !stringr::str_detect(decision, re_retir),
@@ -189,7 +189,6 @@ tidy_tjsp_cposg_dec <- function(cposg) {
                   dec_val = dec,
                   decision,
                   dec_unanime = unanime)
-
 }
 
 
@@ -200,6 +199,10 @@ tidy_tjsp_cposg_dec <- function(cposg) {
 #' @export
 tidy_tjsp_cposg <- function(path) {
 
+  classes_writ <- c("Mandado de Segurança", "Habeas Corpus", "Revisão Criminal")
+  classes_recurso <- c("Apelação", "Agravo de Execução Penal", "Recurso em Sentido Estrito")
+
+
   cposg <- readr::read_rds(paste0(path, "/cposg.rds"))
   cposg_data <- tidy_tjsp_cposg_data(cposg)
   cposg_parts <- tidy_tjsp_cposg_parts(cposg)
@@ -209,7 +212,15 @@ tidy_tjsp_cposg <- function(path) {
   cposg_data %>%
     dplyr::inner_join(cposg_parts, c("n_processo", "file")) %>%
     dplyr::inner_join(cposg_movs, c("n_processo", "file")) %>%
-    dplyr::left_join(cposg_dec, c("n_processo", "file"))
+    dplyr::left_join(cposg_dec, c("n_processo", "file")) %>%
+    dplyr::mutate(info_classe_crim = dplyr::case_when(
+      info_area == "Criminal" & info_classe %in% classes_writ ~ "Writ",
+      info_area == "Criminal" & info_classe %in% classes_recurso ~ "Recurso",
+      TRUE ~ "Não é criminal"
+    ))
+
+
+
 
 }
 
