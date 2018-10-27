@@ -20,6 +20,7 @@ Imports: magrittr,
     lubridate,
     rvest,
     stringi,
-    xml2
+    xml2,
+    rdrop2
 Remotes: courtsbr/esaj
 RoxygenNote: 6.0.1
