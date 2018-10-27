@@ -22,5 +22,6 @@ Imports: magrittr,
     stringi,
     xml2,
     rdrop2
-Remotes: courtsbr/esaj
+Remotes: courtsbr/esaj,
+    abjur/abjutils
 RoxygenNote: 6.0.1
