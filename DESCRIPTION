@@ -13,5 +13,13 @@ Imports: magrittr,
     tidyr,
     abjutils,
     readr,
-    purrr
+    purrr,
+    esaj,
+    fs,
+    janitor,
+    lubridate,
+    rvest,
+    stringi,
+    xml2
+Remotes: courtsbr/esaj
 RoxygenNote: 6.0.1

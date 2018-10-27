@@ -1,24 +1,3 @@
-parse_movs2 <- function(parser) {
-  stopifnot("parser" %in% class(parser))
-  get_movs <- function(html) {
-    xp0 <- "//*[@id='tabelaTodasMovimentacoes']"
-    tab <- xml2::xml_find_all(html, paste0(xp0, "//parent::table"))
-    # if (length(tab) == 0) tab <- xml2::xml_find_all(html, xp0)
-    tab %>%
-      rvest::html_table(fill = TRUE) %>%
-      purrr::pluck(1) %>%
-      janitor::clean_names() %>%
-      dplyr::as_tibble() %>%
-      dplyr::select(movement = data, X3 = movimento) %>%
-      dplyr::filter(movement != "") %>%
-      tidyr::separate(X3, c("title", "txt"), sep = "\n\t",
-                      extra = "merge", fill = "right") %>%
-      dplyr::mutate_all(stringr::str_squish) %>%
-      dplyr::mutate(movement = lubridate::dmy(movement, quiet = TRUE))
-  }
-  purrr::list_merge(parser, name = "movs", getter = get_movs)
-}
-
 #' Downloads and parses one day
 #'
 #' Uses \code{esaj} to download and parse all files from cjsg and cposg from
@@ -78,6 +57,28 @@ sg_day <- function(date = Sys.Date() - 1, path = ".",
     warning("There were errors downloading CPOSG.")
   # parsing cposg --------------------------------------------------------------
   if (verbose) cat("    Parsing cposg...\n")
+
+  parse_movs2 <- function(parser) {
+    stopifnot("parser" %in% class(parser))
+    get_movs <- function(html) {
+      xp0 <- "//*[@id='tabelaTodasMovimentacoes']"
+      tab <- xml2::xml_find_all(html, paste0(xp0, "//parent::table"))
+      # if (length(tab) == 0) tab <- xml2::xml_find_all(html, xp0)
+      tab %>%
+        rvest::html_table(fill = TRUE) %>%
+        purrr::pluck(1) %>%
+        janitor::clean_names() %>%
+        dplyr::as_tibble() %>%
+        dplyr::select(movement = data, X3 = movimento) %>%
+        dplyr::filter(movement != "") %>%
+        tidyr::separate(X3, c("title", "txt"), sep = "\n\t",
+                        extra = "merge", fill = "right") %>%
+        dplyr::mutate_all(stringr::str_squish) %>%
+        dplyr::mutate(movement = lubridate::dmy(movement, quiet = TRUE))
+    }
+    purrr::list_merge(parser, name = "movs", getter = get_movs)
+  }
+
   cposg_files <- normalizePath(fs::dir_ls(full_path_cposg))
   parser <- esaj::make_parser()
   parser <- parser %>%

@@ -1,13 +1,12 @@
-#' as funções dessa parte do pacote são responsáveis por criar as colunas
-#' que serão efetivamente analisadas no relatório
-
 arruma_sa <- function(string_vec) {
+  # as funcoes dessa parte do pacote sao responsaveis por criar as colunas
+  # que serao efetivamente analisadas no relatorio
   regex_sa_geral <- stringr::regex("([^d][^e]) s *[\\./]?a *\\.?( [(].+[)])?$")
   string_vec_phase1 <- stringr::str_replace(string_vec, regex_sa_geral,"\\1 @s@a@\\2")
   regex_sa_particular <- stringr::regex("s/ *a|s\\. *a\\.?|( )sa$|( )+s ?a($| )")
   string_vec_phase2 <- stringr::str_replace(string_vec_phase1, regex_sa_particular," @s@a@\\2")
   regex_estacio_de_sa <- stringr::regex('estacio de sa')
-  string_vec_phase3 <- stringr::str_replace(string_vec_phase2, regex_estacio_de_sa,"estacio de @s@a@")
+  string_vec_phase3 <- stringr::str_replace(string_vec_phase2, regex_estacio_de_sa, "estacio de @s@a@")
 
   return(stringr::str_trim(stringr::str_replace_all(string_vec_phase3, "[:space:]+", " ")))
 }
@@ -74,7 +73,7 @@ aggregate_major_companies <- function(names_column){
     regex_rio_claro = vec2regex("rio claro"),
     regex_nextel = vec2regex("nextel"),
     #a telemar foi comprada pela oi em algum momento.
-    #Essa regex é muito perigosa porque ela transforma a oi na maior demandada do Rio.
+    #Essa regex \u00e9 muito perigosa porque ela transforma a oi na maior demandada do Rio.
     regex_oi = vec2regex("telemar","( |^)oi( |$)", "tnl", "(brasil|br) ?teleco[mn]"),
     regex_itau = vec2regex("unibanco", "itau", "citicard"),
     regex_renner = vec2regex("banco a ?j renner"),
@@ -134,7 +133,7 @@ aggregate_major_companies <- function(names_column){
     regex_avista = vec2regex("avista"),
     regex_digibras = vec2regex("digibras"),
     regex_inss = vec2regex("inss","instituto nacional do seguro social"),
-    #coloquei um x aqui pra não pegar na regex de baixo
+    #coloquei um x aqui pra n\u00e3o pegar na regex de baixo
     regex_banco_vxolkswagen = vec2regex("banco volks[wv]age[nm]"),
     regex_volkswagen = vec2regex("volks[wv]age[nm]"),
     regex_energisa = vec2regex("energisa","cemat"),
@@ -147,7 +146,7 @@ aggregate_major_companies <- function(names_column){
     regex_banco_finasa = vec2regex("finasa"),
     regex_natura = vec2regex("natura","rodobens"),
     regex_tokio_marine = vec2regex("tokio marine"),
-    #coloquei um x em fxord pra não pegar na regex de baixo
+    #coloquei um x em fxord pra n\u00e3o pegar na regex de baixo
     regex_banco_fxord = vec2regex("banco ford"),
     regex_ford = vec2regex("ford"),
     regex_basa = vec2regex("banco da amazonia","basa"),
@@ -156,7 +155,7 @@ aggregate_major_companies <- function(names_column){
     regex_cef = vec2regex("cef","caixa economica federal","caixa"),
     regex_mapfre = vec2regex("mapfre"),
     regex_cvc = vec2regex("cvc"),
-    #coloquei um x em fxiat pra não pegar na regex de baixo
+    #coloquei um x em fxiat pra n\u00e3o pegar na regex de baixo
     regex_banco_fxiat = vec2regex("banco fiat"),
     regex_ford = vec2regex("fiat"),
     regex_banco_hxonda = vec2regex("banco honda"),
@@ -202,7 +201,7 @@ aggregate_major_companies <- function(names_column){
     regex_boa_vista = vec2regex("boa vista"),
     regex_ace = vec2regex("ace"),
     regex_aes_sul = vec2regex("aes sul"),
-    regex_ceee = vec2regex("ceee","companhia estadual de energia elétrica"),
+    regex_ceee = vec2regex("ceee","companhia estadual de energia el\u00e9trica"),
     regex_cifra = vec2regex("cifra"),
     regex_corsan = vec2regex("corsan"),
     regex_rio_grande_energia = vec2regex("rio grande energia"),

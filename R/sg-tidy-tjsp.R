@@ -22,14 +22,14 @@ tidy_tjsp_cposg_data <- function(cposg) {
         stringr::str_detect(distribuicao, "Criminal") ~ "Criminal",
         stringr::str_detect(distribuicao, "Privado") ~ "Privado",
         stringr::str_detect(distribuicao, "Empresarial") ~ "Empresarial",
-        stringr::str_detect(distribuicao, "P[uú]blico") ~ "Público",
+        stringr::str_detect(distribuicao, "P[u\u00fa]blico") ~ "P\u00fablico",
         stringr::str_detect(distribuicao, "Ambien") ~ "Ambiental",
-        stringr::str_detect(distribuicao, "Recup") ~ "Falência e Recuperação",
+        stringr::str_detect(distribuicao, "Recup") ~ "Fal\u00eancia e Recupera\u00e7\u00e3o",
         TRUE ~ NA_character_
       ),
       regime = dplyr::case_when(
-        stringr::str_detect(distribuicao, "Extraordin") ~ "Extraordinária",
-        stringr::str_detect(distribuicao, "ª Câmara (Reservada )?de.*[^A-Z]$") ~ "Ordinária",
+        stringr::str_detect(distribuicao, "Extraordin") ~ "Extraordin\u00e1ria",
+        stringr::str_detect(distribuicao, "\u00aa C\u00e2mara (Reservada )?de.*[^A-Z]$") ~ "Ordin\u00e1ria",
         TRUE ~ "Outro"
       )
     ) %>%
@@ -38,9 +38,9 @@ tidy_tjsp_cposg_data <- function(cposg) {
     ) %>%
     # arrumar
     dplyr::mutate(area = dplyr::case_when(
-      area == "Privado" & camara %in% sprintf("%02d", 1:10) ~ "Família",
+      area == "Privado" & camara %in% sprintf("%02d", 1:10) ~ "Fam\u00edlia",
       area == "Privado" & camara %in% sprintf("%02d", c(11:24, 37:38)) ~ "Contratos",
-      area == "Privado" & camara %in% sprintf("%02d", 25:36) ~ "Imobiliário",
+      area == "Privado" & camara %in% sprintf("%02d", 25:36) ~ "Imobili\u00e1rio",
       area == "Criminal" ~ "Criminal"
     )) %>%
     tidyr::separate(origem, c("info_comarca", "info_foro", "info_vara"),
@@ -199,9 +199,8 @@ tidy_tjsp_cposg_dec <- function(cposg) {
 #' @export
 tidy_tjsp_cposg <- function(path) {
 
-  classes_writ <- c("Mandado de Segurança", "Habeas Corpus", "Revisão Criminal")
-  classes_recurso <- c("Apelação", "Agravo de Execução Penal", "Recurso em Sentido Estrito")
-
+  classes_writ <- c("Mandado de Seguran\u00e7a", "Habeas Corpus", "Revis\u00e3o Criminal")
+  classes_recurso <- c("Apela\u00e7\u00e3o", "Agravo de Execu\u00e7\u00e3o Penal", "Recurso em Sentido Estrito")
 
   cposg <- readr::read_rds(paste0(path, "/cposg.rds"))
   cposg_data <- tidy_tjsp_cposg_data(cposg)
@@ -216,16 +215,6 @@ tidy_tjsp_cposg <- function(path) {
     dplyr::mutate(info_classe_crim = dplyr::case_when(
       info_area == "Criminal" & info_classe %in% classes_writ ~ "Writ",
       info_area == "Criminal" & info_classe %in% classes_recurso ~ "Recurso",
-      TRUE ~ "Não é criminal"
+      TRUE ~ "N\u00e3o \u00e9 criminal"
     ))
-
-
-
-
 }
-
-
-
-
-
-
