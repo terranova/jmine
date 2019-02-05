@@ -79,7 +79,10 @@ sg_day <- function(date = Sys.Date() - 1, path = ".",
     purrr::list_merge(parser, name = "movs", getter = get_movs)
   }
 
-  cposg_files <- normalizePath(fs::dir_ls(full_path_cposg))
+  cposg_files <- full_path_cposg %>%
+    fs::dir_ls() %>% 
+    normalizePath() %>% 
+    purrr::set_names()
   parser <- esaj::make_parser()
   parser <- parser %>%
     esaj::parse_data() %>%
